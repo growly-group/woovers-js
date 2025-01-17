@@ -6,7 +6,8 @@ const _generatedApiKeys = [];
 const _pixQrCodes = [];
 
 async function main() {
-  const apiKey = randomBytes(128).toString("base64");
+  console.log("Running Woovi in memory api mock...");
+  const apiKey = randomBytes(64).toString("base64");
   console.log(`ApiKey: ${apiKey}`);
 }
 

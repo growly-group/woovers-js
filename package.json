@@ -1,8 +1,9 @@
 {
   "name": "woovers-js",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "run": "node index.js"
+    "go": "node index.js"
   },
   "dependencies": {
     "express": "^4.21.2",
