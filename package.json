@@ -5,6 +5,7 @@
     "run": "node index.js"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "yargs": "^17.7.2"
   }
 }
