@@ -1,25 +1,68 @@
-import { randomBytes } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import express from 'express';
+import { generateBRCode } from './brcode.js';
 
 const _generatedApiKeys = [];
-const _pixQrCodes = [{
-  pixQrCode: {
-    name: 'pix qrcode static',
-    value: 100,
-    comment: 'pix qrcode static',
-    correlationID: 'fe7834b4060c488a9b0f89811be5f5cf',
-    identifier: 'zr7833b4060c488a9b0f89811',
-    paymentLinkID: '7777-6f71-427a-bf00-241681624586',
-    paymentLinkUrl:
-      'https://openpix.com.br/pay/fe7834b4060c488a9b0f89811be5f5cf',
-    qrCodeImage:
-      'https://api.openpix.com.br/openpix/charge/brcode/image/fe7834b4060c488a9b0f89811be5f5cf.png',
-    brCode:
-      '000201010212261060014br.gov.bcb.pix2584https://api.openpix.com.br/openpix/testing?transactionID=867ba5173c734202ac659721306b38c952040000530398654040.015802BR5909LOCALHOST6009Sao Paulo62360532867ba5173c734202ac659721306b38c963044BCA',
-    createdAt: '2021-03-02T17:28:51.882Z',
-    updatedAt: '2021-03-02T17:28:51.882Z',
+const _pixQrCodes = [];
+
+const generateIdentifier = () => {
+  const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 25; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
-}];
+
+  const existingIdentifier = _pixQrCodes.find(item => item.pixQrCode.identifier === result);
+
+  if (existingIdentifier) {
+    return generateIdentifier();
+  }
+
+  return result;
+}
+
+const createPixQrCode = (data) => {
+  const { name, correlationID, value, comment } = data;
+
+  if (!name) {
+    return {
+      data: null,
+      error: 'Name is required',
+    };
+  }
+
+  if (typeof value !== 'number' || value <= 0) {
+    return {
+      data: null,
+      error: 'Value should be a positive number',
+    };
+  }
+
+  const identifier = generateIdentifier();
+
+  const newPixQrCode = {
+    pixQrCode: {
+      name,
+      correlationID,
+      value,
+      comment,
+      identifier,
+      paymentLinkID: randomUUID(), // not correct, but ok for now
+      paymentLinkUrl: `https://openpix.com.br/pay/${correlationID}`,
+      qrCodeImage: `https://api.openpix.com.br/openpix/charge/brcode/image/${correlationID}.png`,
+      brCode: generateBRCode(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+  };
+
+  _pixQrCodes.push(newPixQrCode);
+
+  return {
+    data: newPixQrCode.pixQrCode,
+    error: null,
+  };
+}
 
 const getSingle = (conditions) => {
   const data = _pixQrCodes.find((item) => {
@@ -62,6 +105,8 @@ async function main() {
   const app = express();
   const port = 3000;
 
+  app.use(express.json())
+
   app.get('/api/v1/qr-code-static/:id', async (req, res) => {
     const { id } = req.params;
     const { data, error } = getSingle([
@@ -88,20 +133,30 @@ async function main() {
   });
 
   app.post('/api/v1/qr-code-static', async (req, res) => {
+    const { name, correlationID, value, comment } = req.body;
+
+    if (!name) {
+      return res.status(400).send({
+        error: "Name is required",
+      });
+    }
+
+    const { data, error } = createPixQrCode({
+      name,
+      correlationID,
+      value,
+      comment,
+    });
+
+    if (error) {
+      return res.status(400).send({
+        error,
+      });
+    }
+
     res.send({
-      pixQrCode: {
-        value: 100,
-        comment: "good",
-        correlationID: "9134e286-6f71-427a-bf00-241681624586",
-        identifier: "zr7833b4060c488a9b0f89811",
-        paymentLinkID: "7777a23s-6f71-427a-bf00-241681624586",
-        paymentLinkUrl: "https://openpix.com.br/pay/9134e286-6f71-427a-bf00-241681624586",
-        qrCodeImage: "https://api.openpix.com.br/openpix/pixQrCode/brcode/image/9134e286-6f71-427a-bf00-241681624586.png",
-        createdAt: "2021-03-02T17:28:51.882Z",
-        updatedAt: "2021-03-02T17:28:51.882Z",
-        brCode: "000201010212261060014br.gov.bcb.pix2584https://api.openpix.com.br/openpix/testing?transactionID=867ba5173c734202ac659721306b38c952040000530398654040.015802BR5909LOCALHOST6009Sao Paulo62360532867ba5173c734202ac659721306b38c963044BCA"
-      }
-    })
+      pixQrCode: data,
+    });
   });
 
   app.listen(port, () => {
