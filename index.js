@@ -107,7 +107,7 @@ async function main() {
 
   app.use(express.json())
 
-  app.get('/api/v1/qr-code-static/:id', async (req, res) => {
+  app.get('/api/v1/qrcode-static/:id', async (req, res) => {
     const { id } = req.params;
     const { data, error } = getSingle([
       (item) => item.pixQrCode.identifier === id,
@@ -122,7 +122,7 @@ async function main() {
     res.send({ pixQrCode: data });
   });
 
-  app.get('/api/v1/qr-code-static', async (req, res) => {
+  app.get('/api/v1/qrcode-static', async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const { data, pageInfo } = getAllPaginated(page, limit);
 
@@ -132,7 +132,7 @@ async function main() {
     });
   });
 
-  app.post('/api/v1/qr-code-static', async (req, res) => {
+  app.post('/api/v1/qrcode-static', async (req, res) => {
     const { name, correlationID, value, comment } = req.body;
 
     if (!name) {
