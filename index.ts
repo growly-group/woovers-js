@@ -3,16 +3,31 @@ import express from 'express';
 import { generateBRCode } from './brcode.js';
 
 const _generatedApiKeys = [];
-const _pixQrCodes = [];
+const _pixQrCodes: PixQrCode[] = [];
 
-const generateIdentifier = () => {
+type PixQrCode = {
+  name: string;
+  correlationID: string;
+  value: number;
+  comment?: string;
+  identifier: string;
+  paymentLinkID: string;
+  paymentLinkUrl: string;
+  qrCodeImage: string;
+  brCode: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+
+const generateIdentifier = (): string => {
   const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < 25; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
 
-  const existingIdentifier = _pixQrCodes.find(item => item.pixQrCode.identifier === result);
+  const existingIdentifier = _pixQrCodes.find(item => item.identifier === result);
 
   if (existingIdentifier) {
     return generateIdentifier();
@@ -21,7 +36,14 @@ const generateIdentifier = () => {
   return result;
 }
 
-const createPixQrCode = (data) => {
+type CreatePixQrCodeInput = {
+  name: string;
+  correlationID: string;
+  value: number;
+  comment?: string;
+};
+
+const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; error: string | null } => {
   const { name, correlationID, value, comment } = data;
 
   if (!name) {
@@ -40,8 +62,7 @@ const createPixQrCode = (data) => {
 
   const identifier = generateIdentifier();
 
-  const newPixQrCode = {
-    pixQrCode: {
+  const newPixQrCode:PixQrCode = {
       name,
       correlationID,
       value,
@@ -53,18 +74,18 @@ const createPixQrCode = (data) => {
       brCode: generateBRCode(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    }
+    
   };
 
   _pixQrCodes.push(newPixQrCode);
 
   return {
-    data: newPixQrCode.pixQrCode,
+    data: newPixQrCode,
     error: null,
   };
 }
 
-const getSingle = (conditions) => {
+const getSingle = (conditions: Array<(item: PixQrCode) => boolean>): { data:PixQrCode | null; error: string | null } => {
   const data = _pixQrCodes.find((item) => {
     return conditions.every((condition) => condition(item));
   });
@@ -77,12 +98,24 @@ const getSingle = (conditions) => {
   }
 
   return {
-    data: data.pixQrCode,
+    data: data,
     error: null,
   };
 }
 
-const getAllPaginated = (page, limit) => {
+const getAllPaginated = (
+  page: number,
+  limit: number
+): {
+  data: PixQrCode[];
+  pageInfo: {
+    skip: number;
+    limit: number;
+    totalCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+  };
+} => {
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
   const paginatedData = _pixQrCodes.slice(startIndex, endIndex);
@@ -110,7 +143,7 @@ async function main() {
   app.get('/api/v1/qrcode-static/:id', async (req, res) => {
     const { id } = req.params;
     const { data, error } = getSingle([
-      (item) => item.pixQrCode.identifier === id,
+      (item) => item.identifier === id,
     ]);
 
     if (!data) {
