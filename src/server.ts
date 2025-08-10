@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import app  from './app';
+import {app, apiKey}  from './app';
 import cors from 'cors'; 
 dotenv.config();
 
@@ -9,4 +9,4 @@ const corsOptions = [
 app.use(cors(corsOptions));
 
 const PORT = process.env.PORT || 3001 
-app.listen(PORT, () => console.log('running in', PORT));
+app.listen(PORT, () => console.log(`running in ${PORT} w/ apiKey: ${apiKey}`));
