@@ -1,4 +1,4 @@
 import { randomBytes } from 'crypto';
 
 
-export const apiKey = randomBytes(64).toString('base64');
+export const apiKey = (): string => randomBytes(64).toString('base64');

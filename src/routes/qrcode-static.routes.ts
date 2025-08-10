@@ -1,7 +1,7 @@
 import { getQrCodeStaticByID, getQrCodeStatic, createQrCodeStatic } from "../methods/pixqrcode.methods";
 import Router from 'express';
 
-const router= Router();
+const router = Router();
 
 router.get('/qrcode-static/:id', getQrCodeStaticByID);
 

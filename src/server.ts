@@ -9,4 +9,4 @@ const corsOptions = [
 app.use(cors(corsOptions));
 
 const PORT = process.env.PORT || 3001 
-app.listen(PORT, () => console.log(`running in ${PORT} w/ apiKey: ${apiKey}`));
+app.listen(PORT, () => console.log(`running in ${PORT} w/ apiKey: ${apiKey()}`));
