@@ -5,7 +5,7 @@ import { generateBRCode } from "../../brcode";
 import { randomUUID } from 'crypto';
 
 
-export const generateIdentifier = (): string => {
+const generateIdentifier = (): string => {
     const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
     for (let i = 0; i < 25; i++) {
@@ -21,7 +21,7 @@ export const generateIdentifier = (): string => {
     return result;
 }
 
-export const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; error: string | null } => {
+const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; error: string | null } => {
     const { name, correlationID, value, comment } = data;
   
     if (!name) {
@@ -63,7 +63,7 @@ export const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode |
     };
 }
 
-export const getSingle = (conditions: Array<(item: PixQrCode) => boolean>): { data:PixQrCode | null; error: string | null } => {
+const getSingle = (conditions: Array<(item: PixQrCode) => boolean>): { data:PixQrCode | null; error: string | null } => {
     const data = _pixQrCodes.find((item) => {
       return conditions.every((condition) => condition(item));
     });
@@ -81,7 +81,7 @@ export const getSingle = (conditions: Array<(item: PixQrCode) => boolean>): { da
     };
 }
 
-export const getAllPaginated = (
+const getAllPaginated = (
     page: number,
     limit: number
   ): {

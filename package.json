@@ -3,15 +3,13 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "bun src/index.ts",
-    "dev": "bun --watch src/index.ts",
-    "go": "bun src/server.ts"
+    "start": "bun src/server.ts",
+    "dev": "bun --watch src/server.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^4.21.2",
-    "package.json": "^2.0.1",
     "yargs": "^17.7.2"
   }
 }
