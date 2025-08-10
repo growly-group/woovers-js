@@ -2,7 +2,7 @@ import { _pixQrCodes } from "../db";
 import { CreatePixQrCodeInput } from "../types/CreatePixQrCodeInput";
 import { PixQrCode } from "../types/PixQrCode";
 import { generateBRCode } from "../../brcode";
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 
 const generateIdentifier = (): string => {
@@ -46,7 +46,7 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
         value,
         comment,
         identifier,
-        paymentLinkID: randomUUID(), // not correct, but ok for now
+        paymentLinkID: uuidv4(),
         paymentLinkUrl: `https://openpix.com.br/pay/${correlationID}`,
         qrCodeImage: `https://api.openpix.com.br/openpix/charge/brcode/image/${correlationID}.png`,
         brCode: generateBRCode(),
