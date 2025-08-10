@@ -1,12 +1,12 @@
-import { getQrCodeStaticByID, getQrCodeStatic } from "../methods/pixqrcode.methods";
+import { getQrCodeStaticByID, getQrCodeStatic, createQrCodeStatic } from "../methods/pixqrcode.methods";
 import Router from 'express';
 
 const router= Router();
 
-router.get('qrcode-static/:id', getQrCodeStaticByID);
+router.get('/qrcode-static/:id', getQrCodeStaticByID);
 
-router.get('qrcode-static/', getQrCodeStatic);
+router.get('/qrcode-static/', getQrCodeStatic);
 
-router.post('qrcode-static/', );
+router.post('/qrcode-static/', createQrCodeStatic );
 
 export default router;
