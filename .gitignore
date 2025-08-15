@@ -137,3 +137,6 @@ dist
 
 # Intellij based IDEs
 .idea/
+
+# SQLite database files
+*.sqlite
