@@ -6,7 +6,9 @@ export class BunSqliteProvider implements DatabaseProvider {
   private db: Database;
 
   constructor() {
-    this.db = new Database('woovers.sqlite', { create: true });
+    const sqliteFileName = process.env.SQLITE_FILE_NAME || 'woovers.sqlite';
+
+    this.db = new Database(sqliteFileName, { create: true });
 
     this.db.run(`
         CREATE TABLE IF NOT EXISTS pix_qr_codes
