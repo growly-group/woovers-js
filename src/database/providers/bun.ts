@@ -52,13 +52,6 @@ export class BunSqliteProvider implements DatabaseProvider {
     `);
   }
 
-  savePixQrCode(newPixQrCode: PixQrCode): void {
-    this.db.run(
-      'INSERT INTO pix_qr_codes (name, correlationID, value, comment, identifier, paymentLinkID, paymentLinkUrl, qrCodeImage, brCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [newPixQrCode.name, newPixQrCode.correlationID, newPixQrCode.value, newPixQrCode.comment, newPixQrCode.identifier, newPixQrCode.paymentLinkID, newPixQrCode.paymentLinkUrl, newPixQrCode.qrCodeImage, newPixQrCode.brCode, newPixQrCode.createdAt, newPixQrCode.updatedAt]
-    );
-  }
-
   getPixQrCodes(offset: number, limit: number): Paginated<PixQrCode> {
     const pixQrCodeCount = this.db.query("SELECT COUNT(*) as count FROM pix_qr_codes").get() as number;
     const data = this.db.query("SELECT * FROM pix_qr_codes LIMIT $limit OFFSET $offset").all({$limit: limit, $offset: offset}) as PixQrCode[];
@@ -83,6 +76,9 @@ export class BunSqliteProvider implements DatabaseProvider {
   }
 
   createPixQrCode(pixQrCode: PixQrCode): void {
-    throw new Error('Method not implemented.');
+    this.db.run(
+      'INSERT INTO pix_qr_codes (name, correlationID, value, comment, identifier, paymentLinkID, paymentLinkUrl, qrCodeImage, brCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [pixQrCode.name, pixQrCode.correlationID, pixQrCode.value, pixQrCode.comment, pixQrCode.identifier, pixQrCode.paymentLinkID, pixQrCode.paymentLinkUrl, pixQrCode.qrCodeImage, pixQrCode.brCode, pixQrCode.createdAt, pixQrCode.updatedAt]
+    );
   }
 }

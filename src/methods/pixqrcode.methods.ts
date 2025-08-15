@@ -66,7 +66,7 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
         updatedAt: new Date().toISOString(),
     };
 
-    provider.savePixQrCode(newPixQrCode);
+    provider.createPixQrCode(newPixQrCode);
 
     return {
       data: newPixQrCode,

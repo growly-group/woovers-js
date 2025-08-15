@@ -4,7 +4,6 @@ export interface DatabaseProvider {
   getPixQrCodes(offset: number, limit: number): Paginated<PixQrCode>;
   getPixQrCodeByIdentifier(identifier: string): PixQrCode | null;
   createPixQrCode(pixQrCode: PixQrCode): void;
-  savePixQrCode(newPixQrCode: PixQrCode): void;
 }
 
 export type Paginated<T> = {
