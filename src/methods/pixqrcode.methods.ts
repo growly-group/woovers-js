@@ -1,10 +1,15 @@
-import { db } from "../db";
-import { CreatePixQrCodeInput } from "../types/CreatePixQrCodeInput";
-import { PixQrCode } from "../types/PixQrCode";
-import { generateBRCode } from "../../brcode";
+import { CreatePixQrCodeInput } from '../types/CreatePixQrCodeInput';
+import { PixQrCode } from '../types/PixQrCode';
+import { generateBRCode } from '../../brcode';
 import { v4 as uuidv4 } from 'uuid';
-import type {Request, Response} from "express";
-import { Paginated } from '../types/paginated';
+import type { Request, Response } from 'express';
+import { getDatabaseProvider } from '../database/providers/get-provider';
+import { Paginated } from '../database/types';
+
+const {error, provider} = getDatabaseProvider();
+if (error) {
+  throw new Error('Database provider not found');
+}
 
 const generateIdentifier = (): string => {
     const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -12,8 +17,7 @@ const generateIdentifier = (): string => {
     for (let i = 0; i < 25; i++) {
       result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
-
-    const existingIdentifier = db.query("SELECT identifier FROM pix_qr_codes WHERE identifier = ?").get(result);
+    const existingIdentifier = provider.getPixQrCodeByIdentifier(result)
 
     if (existingIdentifier) {
       return generateIdentifier();
@@ -48,7 +52,7 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
 
     const identifier = generateIdentifier();
 
-    const newPixQrCode:PixQrCode = {
+    const newPixQrCode: PixQrCode = {
         name,
         correlationID,
         value,
@@ -62,10 +66,7 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
         updatedAt: new Date().toISOString(),
     };
 
-    db.run(
-        "INSERT INTO pix_qr_codes (name, correlationID, value, comment, identifier, paymentLinkID, paymentLinkUrl, qrCodeImage, brCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [name, correlationID, value, comment, identifier, newPixQrCode.paymentLinkID, newPixQrCode.paymentLinkUrl, newPixQrCode.qrCodeImage, newPixQrCode.brCode, newPixQrCode.createdAt, newPixQrCode.updatedAt]
-    );
+    provider.savePixQrCode(newPixQrCode);
 
     return {
       data: newPixQrCode,
@@ -74,7 +75,7 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
 }
 
 const getSingle = (identifier: string): { data: PixQrCode | null; error: string | null } => {
-    const data = db.query("SELECT * FROM pix_qr_codes WHERE identifier = ?").get(identifier) as PixQrCode | null;
+    const data = provider.getPixQrCodeByIdentifier(identifier);
 
     if (!data) {
       return {
@@ -93,21 +94,8 @@ const getAllPaginated = (
     page: number,
     limit: number
   ): Paginated<PixQrCode> => {
-    const offset = (page - 1) * limit;
-    const paginatedData = db.query("SELECT * FROM pix_qr_codes LIMIT $limit OFFSET $offset").all({$limit: limit, $offset: offset}) as PixQrCode[];
-    const totalCountQuery = db.query("SELECT COUNT(*) as count FROM pix_qr_codes").get();
-    const totalCount = totalCountQuery ? (totalCountQuery as any).count : 0;
-
-    return {
-      data: paginatedData,
-      pageInfo: {
-        skip: offset,
-        limit: limit,
-        totalCount: totalCount,
-        hasPreviousPage: offset > 0,
-        hasNextPage: offset + limit < totalCount
-      }
-    };
+  const offset = (page - 1) * limit;
+  return provider.getPixQrCodes(offset, limit);
 }
 
 export const getQrCodeStatic = async (req: Request, res: Response) => {
