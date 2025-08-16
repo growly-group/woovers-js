@@ -1,32 +1,26 @@
 import { CreatePixQrCodeInput } from '../types/CreatePixQrCodeInput';
 import { PixQrCode } from '../types/PixQrCode';
-import { generateBRCode } from '../../brcode';
 import { v4 as uuidv4 } from 'uuid';
 import type { Request, Response } from 'express';
-import { getDatabaseProvider } from '../database/providers/get-provider';
-import { Paginated } from '../database/types';
+import { DatabaseProvider, Paginated } from '../database/types';
+import { generateBRCode } from '../utils/brcode';
 
-const {error, provider} = getDatabaseProvider();
-if (error) {
-  throw new Error('Database provider not found');
-}
+const generateIdentifier = (db: DatabaseProvider): string => {
+  const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 25; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  const existingIdentifier = db.getPixQrCodeByIdentifier(result);
 
-const generateIdentifier = (): string => {
-    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 25; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    const existingIdentifier = provider.getPixQrCodeByIdentifier(result)
+  if (existingIdentifier) {
+    return generateIdentifier(db);
+  }
 
-    if (existingIdentifier) {
-      return generateIdentifier();
-    }
+  return result;
+};
 
-    return result;
-}
-
-const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; error: string | null } => {
+const createPixQrCode = (db: DatabaseProvider, data: CreatePixQrCodeInput): { data: PixQrCode | null; error: string | null } => {
     const { name, correlationID, value, comment } = data;
 
     if (!name) {
@@ -43,14 +37,14 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
       };
     }
 
-    if (typeof value !== 'number' || value <= 0) {
+    if (value <= 0) {
       return {
         data: null,
         error: 'Value should be a positive number',
       };
     }
 
-    const identifier = generateIdentifier();
+    const identifier = generateIdentifier(db);
 
     const newPixQrCode: PixQrCode = {
         name,
@@ -66,7 +60,7 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
         updatedAt: new Date().toISOString(),
     };
 
-    provider.createPixQrCode(newPixQrCode);
+    db.createPixQrCode(newPixQrCode);
 
     return {
       data: newPixQrCode,
@@ -74,8 +68,8 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
     };
 }
 
-const getSingle = (identifier: string): { data: PixQrCode | null; error: string | null } => {
-    const data = provider.getPixQrCodeByIdentifier(identifier);
+const getSingle = (db: DatabaseProvider, identifier: string): { data: PixQrCode | null; error: string | null } => {
+    const data = db.getPixQrCodeByIdentifier(identifier);
 
     if (!data) {
       return {
@@ -91,16 +85,19 @@ const getSingle = (identifier: string): { data: PixQrCode | null; error: string 
 }
 
 const getAllPaginated = (
-    page: number,
-    limit: number
-  ): Paginated<PixQrCode> => {
+  db: DatabaseProvider,
+  page: number,
+  limit: number
+): Paginated<PixQrCode> => {
   const offset = (page - 1) * limit;
-  return provider.getPixQrCodes(offset, limit);
+  return db.getPixQrCodes(offset, limit);
 }
 
 export const getQrCodeStatic = async (req: Request, res: Response) => {
   const { page = 1, limit = 10 } = req.query;
-  const { data, pageInfo } = getAllPaginated(Number(page), Number(limit));
+  const db = req.context.db;
+
+  const { data, pageInfo } = getAllPaginated(db, Number(page), Number(limit));
 
   res.send({
     pageInfo,
@@ -110,8 +107,13 @@ export const getQrCodeStatic = async (req: Request, res: Response) => {
 
 export const getQrCodeStaticByID = async (req: Request, res: Response) => {
     const { id } = req.params;
-    console.log(req.params.id)
-    const { data, error } = getSingle(id);
+
+    if (!id) {
+      return res.status(400).send({ error: 'Identifier is required' });
+    }
+
+    const db = req.context.db;
+    const { data, error } = getSingle(db, id);
 
     if (error) {
       return res.status(404).send({ error });
@@ -123,7 +125,9 @@ export const getQrCodeStaticByID = async (req: Request, res: Response) => {
 export const createQrCodeStatic = async (req: Request, res: Response) => {
     const { name, correlationID, value, comment } = req.body;
 
-    const { data, error } = createPixQrCode({
+    const db = req.context.db;
+
+    const { data, error } = createPixQrCode(db, {
       name,
       correlationID,
       value,
