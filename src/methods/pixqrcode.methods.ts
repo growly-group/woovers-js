@@ -1,46 +1,52 @@
-import { _pixQrCodes } from "../db";
-import { CreatePixQrCodeInput } from "../types/CreatePixQrCodeInput";
-import { PixQrCode } from "../types/PixQrCode";
-import { generateBRCode } from "../../brcode";
+import { CreatePixQrCodeInput } from '../types/CreatePixQrCodeInput';
+import { PixQrCode } from '../types/PixQrCode';
 import { v4 as uuidv4 } from 'uuid';
+import type { Request, Response } from 'express';
+import { DatabaseProvider, Paginated } from '../database/types';
+import { generateBRCode } from '../utils/brcode';
 
+const generateIdentifier = (db: DatabaseProvider): string => {
+  const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 25; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  const existingIdentifier = db.getPixQrCodeByIdentifier(result);
 
-const generateIdentifier = (): string => {
-    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 25; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-  
-    const existingIdentifier = _pixQrCodes.find(item => item.identifier === result);
-  
-    if (existingIdentifier) {
-      return generateIdentifier();
-    }
-  
-    return result;
-}
+  if (existingIdentifier) {
+    return generateIdentifier(db);
+  }
 
-const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; error: string | null } => {
+  return result;
+};
+
+const createPixQrCode = (db: DatabaseProvider, data: CreatePixQrCodeInput): { data: PixQrCode | null; error: string | null } => {
     const { name, correlationID, value, comment } = data;
-  
+
     if (!name) {
       return {
         data: null,
         error: 'Name is required',
       };
     }
-  
-    if (typeof value !== 'number' || value <= 0) {
+
+    if (!correlationID) {
+      return {
+        data: null,
+        error: 'Correlation ID is required',
+      };
+    }
+
+    if (value <= 0) {
       return {
         data: null,
         error: 'Value should be a positive number',
       };
     }
-  
-    const identifier = generateIdentifier();
-  
-    const newPixQrCode:PixQrCode = {
+
+    const identifier = generateIdentifier(db);
+
+    const newPixQrCode: PixQrCode = {
         name,
         correlationID,
         value,
@@ -52,29 +58,26 @@ const createPixQrCode = (data: CreatePixQrCodeInput): { data: PixQrCode | null; 
         brCode: generateBRCode(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      
     };
-  
-    _pixQrCodes.push(newPixQrCode);
-  
+
+    db.createPixQrCode(newPixQrCode);
+
     return {
       data: newPixQrCode,
       error: null,
     };
 }
 
-const getSingle = (conditions: Array<(item: PixQrCode) => boolean>): { data:PixQrCode | null; error: string | null } => {
-    const data = _pixQrCodes.find((item) => {
-      return conditions.every((condition) => condition(item));
-    });
-  
+const getSingle = (db: DatabaseProvider, identifier: string): { data: PixQrCode | null; error: string | null } => {
+    const data = db.getPixQrCodeByIdentifier(identifier);
+
     if (!data) {
       return {
         data: null,
         error: 'PixQrCode not found',
       };
     }
-  
+
     return {
       data: data,
       error: null,
@@ -82,36 +85,19 @@ const getSingle = (conditions: Array<(item: PixQrCode) => boolean>): { data:PixQ
 }
 
 const getAllPaginated = (
-    page: number,
-    limit: number
-  ): {
-    data: PixQrCode[];
-    pageInfo: {
-      skip: number;
-      limit: number;
-      totalCount: number;
-      hasPreviousPage: boolean;
-      hasNextPage: boolean;
-    };
-  } => {
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const paginatedData = _pixQrCodes.slice(startIndex, endIndex);
-    return {
-      data: paginatedData,
-      pageInfo: {
-        skip: startIndex,
-        limit: limit,
-        totalCount: _pixQrCodes.length,
-        hasPreviousPage: startIndex > 0,
-        hasNextPage: endIndex < _pixQrCodes.length
-      }
-    };
+  db: DatabaseProvider,
+  page: number,
+  limit: number
+): Paginated<PixQrCode> => {
+  const offset = (page - 1) * limit;
+  return db.getPixQrCodes(offset, limit);
 }
 
-export const getQrCodeStatic = async (req, res) => {
+export const getQrCodeStatic = async (req: Request, res: Response) => {
   const { page = 1, limit = 10 } = req.query;
-  const { data, pageInfo } = getAllPaginated(page, limit);
+  const db = req.context.db;
+
+  const { data, pageInfo } = getAllPaginated(db, Number(page), Number(limit));
 
   res.send({
     pageInfo,
@@ -119,31 +105,29 @@ export const getQrCodeStatic = async (req, res) => {
   });
 }
 
-export const getQrCodeStaticByID = async (req, res) => {
+export const getQrCodeStaticByID = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { data, error } = getSingle([
-      (item) => item.identifier === id,
-    ]);
 
-    if (!data) {
-      return res.status(400).send({
-        error: "PixQrCode not found",
-      });
+    if (!id) {
+      return res.status(400).send({ error: 'Identifier is required' });
+    }
+
+    const db = req.context.db;
+    const { data, error } = getSingle(db, id);
+
+    if (error) {
+      return res.status(404).send({ error });
     }
 
     res.send({ pixQrCode: data });
 }
 
-export const createQrCodeStatic = async (req, res) => {
+export const createQrCodeStatic = async (req: Request, res: Response) => {
     const { name, correlationID, value, comment } = req.body;
 
-    if (!name) {
-      return res.status(400).send({
-        error: "Name is required",
-      });
-    }
+    const db = req.context.db;
 
-    const { data, error } = createPixQrCode({
+    const { data, error } = createPixQrCode(db, {
       name,
       correlationID,
       value,
@@ -156,7 +140,7 @@ export const createQrCodeStatic = async (req, res) => {
       });
     }
 
-    res.send({
+    res.status(201).send({
       pixQrCode: data,
     });
 }

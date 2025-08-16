@@ -1,7 +1,7 @@
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 import {app, apiKey}  from './app';
-import cors from 'cors'; 
-dotenv.config();
+import cors from 'cors';
+config();
 
 const corsOptions = [
     'http://localhost:3000'
