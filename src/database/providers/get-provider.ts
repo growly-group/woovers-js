@@ -8,11 +8,11 @@ export function getDatabaseProvider(): {
   provider: null;
   error: string;
 } {
-  const providerEnv = process.env.DATABASE_PROVIDER || 'bun';
+  const providerEnv = process.env.DATABASE_PROVIDER || 'sqlite';
   let providerInstance: DatabaseProvider;
 
   switch (providerEnv) {
-    case 'bun':
+    case 'sqlite':
       providerInstance = new BunSqliteProvider();
       break;
     default:
