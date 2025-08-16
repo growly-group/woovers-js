@@ -1,6 +1,6 @@
 import type { DatabaseProvider } from '../database/types';
 
-type Context = {
+export type Context = {
   db: DatabaseProvider
 }
 
