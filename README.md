@@ -4,7 +4,7 @@
 
 It includes functionalities such as QR code generation (for testing purposes only), webhooks, and other basic API interactions.  
 
-> âš ï¸� **Important:**  
+> **Important:**  
 > Woovers-js is **not affiliated with Woovi/OpenPIX**. This project only mimics the official API and is meant for development/testing. It does **not guarantee** full compatibility with official or new features.
 
 ## Features
@@ -44,8 +44,8 @@ Refer to the API documentation (if available) for endpoint details.
 
 Contributions are welcome! Please follow these steps:
 
-1. **Create an Issue** â€“ Describe the bug, feature, or enhancement you want to implement.  
-2. **Fork the Repository** â€“ Click the fork button on GitHub.  
-3. **Make Changes** â€“ Implement your feature or fix.  
-4. **Open a Pull Request** â€“ Include a clear description of your changes.  
-5. **Assign a Reviewer** â€“ Assign a maintainer or project member to review your PR.  
+1. **Create an Issue**  Describe the bug, feature, or enhancement you want to implement.  
+2. **Fork the Repository**  Click the fork button on GitHub.  
+3. **Make Changes** Implement your feature or fix.  
+4. **Open a Pull Request** Include a clear description of your changes.  
+5. **Assign a Reviewer** Assign a maintainer or project member to review your PR.  
