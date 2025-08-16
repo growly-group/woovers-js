@@ -16,5 +16,8 @@
     "express": "^4.21.2",
     "uuid": "^11.1.0",
     "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
   }
 }
