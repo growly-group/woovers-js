@@ -1,12 +1,13 @@
 {
   "name": "woovers-js",
   "version": "1.0.0",
-  "description": "An in-memory NodeJS web-server for mimicking the Woovi/OpenPix API",
+  "description": "NodeJS web-server for mimicking the Woovi/OpenPix API",
   "main": "/src/app.ts",
   "type": "module",
   "scripts": {
     "start": "bun src/server.ts",
-    "dev": "bun --watch src/server.ts"
+    "dev": "bun --watch src/server.ts",
+    "build": "bun build src/server.ts --outdir dist --minify --target bun && tsc --emitDeclarationOnly"
   },
   "dependencies": {
     "@types/bun": "^1.2.20",
@@ -20,7 +21,8 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "tsup": "^8.5.0",
+    "@types/cors": "^2.8.19",
+    "bun-types": "^1.2.20",
     "typescript": "^5.9.2"
   }
 }
