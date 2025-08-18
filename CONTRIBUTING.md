@@ -5,7 +5,7 @@ Thank you for your interest in contributing to **woovers-js**! We welcome all fo
 ## 📝 How to Contribute
 
 1. **Create an Issue**
-   - Report bugs, request features, or suggest improvements via [GitHub Issues](https://github.com/woovibr/woovers-js/issues).
+   - Report bugs, request features, or suggest improvements via [GitHub Issues](https://github.com/growly-group/woovers-js/issues).
 2. **Fork the Repository**
    - Click "Fork" on GitHub and clone your fork locally.
 3. **Create a Feature Branch**
@@ -67,7 +67,7 @@ bun test
 
 ## 📄 License
 
-By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+By contributing, you agree that your contributions will be licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ---
 

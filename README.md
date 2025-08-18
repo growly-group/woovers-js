@@ -1,11 +1,9 @@
 
 # <img width="35" src="https://github.com/woovibr/.github/assets/70824102/6c9dda94-84cd-4fba-bdfa-fa135b9454d9"> woovers-js
 
-> A lightweight NodeJS server for mocking the Woovi/OpenPIX API locally
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16-brightgreen.svg)](https://nodejs.org/)
 
-Woovers-js is an in-memory NodeJS lightweight server based on Express.js that mimics the Woovi/OpenPIX API for development and testing purposes. It provides all basic functionality including QRCode generation, webhooks, and persistent data storage without requiring active API keys.
+Woovers-js is a lightweight NodeJS server based on Express.js that mimics the Woovi/OpenPIX API for development and testing purposes. It provides all basic functionality including QRCode generation, webhooks, and persistent data storage using SQLite—no active API keys required.
 
 > [!IMPORTANT]  
 > This tool is **not associated with Woovi/OpenPIX**. It is an unofficial development tool that mimics the official API behavior for testing purposes only. No support is guaranteed for existing or new functionalities.
@@ -109,7 +107,7 @@ WEBHOOK_BASE_URL=http://localhost:3000
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](https://claude.ai/chat/CONTRIBUTING.md) for detailed guidelines on:
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 -   Code style and standards
 -   How to submit pull requests
@@ -134,31 +132,9 @@ bun test
 
 ```
 
-## 📋 Roadmap
-
--   [ ] Complete API endpoint coverage
--   [ ] Enhanced webhook testing tools
--   [ ] Admin dashboard for data management
--   [ ] Docker container support
--   [ ] Comprehensive test suite
--   [ ] API documentation generator
-
-## ⚠️ Limitations
-
--   **Testing Only**: Generated QR codes are not valid PIX codes
--   **No Real Transactions**: All operations are simulated
--   **Development Tool**: Not suitable for production use
--   **Unofficial**: No official support from Woovi/OpenPIX
-
 ## 📄 License
 
-This project is open-source and available under the [MIT License](https://claude.ai/chat/LICENSE).
-
-## 🙏 Acknowledgments
-
--   [Woovi/OpenPIX](https://woovi.com/) for the original API design
--   [Express.js](https://expressjs.com/) for the web framework
--   [Bun](https://bun.sh/) for the fast JavaScript runtime
+This project is open-source and available under the [MIT License](https://opensource.org/licenses/MIT).
 
 ----------
 
