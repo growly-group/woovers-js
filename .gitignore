@@ -140,3 +140,7 @@ dist
 
 # SQLite database files
 *.sqlite
+
+# Ignore test-related files
+/coverage.data
+/coverage/

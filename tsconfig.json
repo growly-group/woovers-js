@@ -5,20 +5,21 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-
+    "emitDeclarationOnly": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "esnext",
     "noUncheckedIndexedAccess": true,
     "strictNullChecks": true,
-
     "strict": true,
     "jsx": "react-jsx",
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-
     "typeRoots": [
-        "./src/types",
-        "./node_modules/@types"
+      "./src/types",
+      "./node_modules/@types"
     ]
   }
 }
