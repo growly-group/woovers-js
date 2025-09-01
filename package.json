@@ -4,6 +4,13 @@
   "description": "NodeJS web-server for mimicking the Woovi/OpenPix API",
   "main": "/src/app.ts",
   "type": "module",
+  "bin": {
+    "woovers-js": "bin/cli.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
   "scripts": {
     "start": "bun src/server.ts",
     "dev": "bun --watch src/server.ts",
