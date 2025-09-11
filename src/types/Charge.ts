@@ -1,46 +1,56 @@
+import { CustomerWithEmail, CustomerWithPhone, CustomerWithTaxID } from "./Customer";
+
 export type Charge = {
   id?: string;
   
   correlationID: string;
-  
   value: number;
   
+  type?: 'DYNAMIC' | 'OVERDUE';
   comment?: string;
+  expiresIn?: number;
+  expiresDate?: string;
   
-  type: 'DYNAMIC' |  'OVERDUE';
-
-  status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  customer?: CustomerWithEmail | CustomerWithPhone | CustomerWithTaxID;
+  ensureSameTaxID?: boolean;
   
-  customer?: {
-    name?: string;
-    email?: string;
-    phone?: string;
-    taxID?: string;
-    correlationID?: string;
+  
+  daysForDueDate?: number;
+  daysAfterDueDate?: number;
+  interests?: {
+    value: number;
   };
-  
-  pixKey?: string;
+  fines?: {
+    value: number;
+  };
+  discountSettings?: {
+    modality: string;
+    discountFixedDate: Array<{
+      daysActive: number;
+      value: number;
+    }>;
+  };
   
   additionalInfo?: Array<{
     key: string;
     value: string;
   }>;
   
-  expiresDate?: string;
+  enableCashbackPercentage?: boolean;
+  enableCashbackExclusivePercentage?: boolean;
   
-  expiresIn?: number;
+  subaccount?: string;
+  splits?: Array<{
+    value: number;
+    pixKey: string;
+    splitType: "SPLIT_INTERNAL_TRANSFER" | "SPLIT_SUB_ACCOUNT" | "SPLIT_PARTNER";
+  }>;
   
+  status?: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+  pixKey?: string;
   paymentLinkID?: string;
-  
   paymentLinkUrl?: string;
-  
-  qrCodeImage?: string;
-  
-  brCode?: string;
-  
   paidAt?: string;
-  
-  createdAt: string;
-  
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
