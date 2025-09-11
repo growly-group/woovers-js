@@ -1,5 +1,6 @@
 import { DatabaseProvider, Paginated } from '../types';
 import { PixQrCode } from '../../types/PixQrCode';
+import { Charge } from '../../types/Charge';
 import { Database } from 'bun:sqlite';
 
 export class BunSqliteProvider implements DatabaseProvider {
@@ -52,6 +53,32 @@ export class BunSqliteProvider implements DatabaseProvider {
             KEY
         )
     `);
+
+    this.db.run(`
+        CREATE TABLE IF NOT EXISTS charges (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            correlationID TEXT NOT NULL,        
+            value INTEGER NOT NULL,                
+            type TEXT CHECK(type IN ('DYNAMIC', 'OVERDUE')),  
+            comment TEXT,                          
+            expiresIn INTEGER,                     
+            expiresDate TEXT,                      
+            customer TEXT,                         
+            ensureSameTaxID BOOLEAN DEFAULT 0,     
+            daysForDueDate INTEGER,                
+            daysAfterDueDate INTEGER,              
+            interests TEXT,                        
+            fines TEXT,                            
+            discountSettings TEXT,                 
+            additionalInfo TEXT,                   
+            enableCashbackPercentage BOOLEAN DEFAULT 0,
+            enableCashbackExclusivePercentage BOOLEAN DEFAULT 0,
+            subaccount TEXT,                       
+            splits TEXT,                           
+            createdAt TEXT DEFAULT CURRENT_TIMESTAMP,  
+            updatedAt TEXT DEFAULT CURRENT_TIMESTAMP   
+        )
+    `);
   }
 
   getPixQrCodes(offset: number, limit: number): Paginated<PixQrCode> {
@@ -82,5 +109,50 @@ export class BunSqliteProvider implements DatabaseProvider {
       'INSERT INTO pix_qr_codes (name, correlationID, value, comment, identifier, paymentLinkID, paymentLinkUrl, qrCodeImage, brCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [pixQrCode.name, pixQrCode.correlationID, pixQrCode.value, pixQrCode.comment, pixQrCode.identifier, pixQrCode.paymentLinkID, pixQrCode.paymentLinkUrl, pixQrCode.qrCodeImage, pixQrCode.brCode, pixQrCode.createdAt, pixQrCode.updatedAt]
     );
+  }
+
+  createCharge(charge: Charge): void {
+    this.db.run(
+      'INSERT INTO charges (correlationID, value, type, comment, expiresIn, expiresDate, customer, ensureSameTaxID, daysForDueDate, daysAfterDueDate, interests, fines, discountSettings, additionalInfo, enableCashbackPercentage, enableCashbackExclusivePercentage, subaccount, splits) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        charge.correlationID,
+        charge.value,
+        charge.type,
+        charge.comment,
+        charge.expiresIn,
+        charge.expiresDate,
+        JSON.stringify(charge.customer), 
+        charge.ensureSameTaxID,
+        charge.daysForDueDate,
+        charge.daysAfterDueDate,
+        JSON.stringify(charge.interests), 
+        JSON.stringify(charge.fines), 
+        JSON.stringify(charge.discountSettings), 
+        JSON.stringify(charge.additionalInfo), 
+        charge.enableCashbackPercentage,
+        charge.enableCashbackExclusivePercentage,
+        charge.subaccount,
+        JSON.stringify(charge.splits), 
+      ]
+    );
+  }
+
+  getChargeByCorrelationID(correlationID: string): Charge | null {
+    const result = this.db.query('SELECT * FROM charges WHERE correlationID = ?').get(correlationID) as any;
+    
+    if (!result) {
+      return null;
+    }
+
+    // Deserialize complex objects
+    return {
+      ...result,
+      customer: result.customer ? JSON.parse(result.customer) : undefined,
+      interests: result.interests ? JSON.parse(result.interests) : undefined,
+      fines: result.fines ? JSON.parse(result.fines) : undefined,
+      discountSettings: result.discountSettings ? JSON.parse(result.discountSettings) : undefined,
+      additionalInfo: result.additionalInfo ? JSON.parse(result.additionalInfo) : undefined,
+      splits: result.splits ? JSON.parse(result.splits) : undefined,
+    } as Charge;
   }
 }
