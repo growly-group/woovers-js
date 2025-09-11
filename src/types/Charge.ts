@@ -7,7 +7,7 @@ export type Charge = {
   
   comment?: string;
   
-  type: 'DYNAMIC' | 'OVERDUE';
+  type: 'DYNAMIC' |  'OVERDUE';
 
   status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
   
