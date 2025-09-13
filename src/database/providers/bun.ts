@@ -56,7 +56,7 @@ export class BunSqliteProvider implements DatabaseProvider {
 
     this.db.run(`
         CREATE TABLE IF NOT EXISTS charges (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             correlationID TEXT NOT NULL,        
             value INTEGER NOT NULL,                
             type TEXT CHECK(type IN ('DYNAMIC', 'OVERDUE')),  
@@ -113,8 +113,9 @@ export class BunSqliteProvider implements DatabaseProvider {
 
   createCharge(charge: Charge): void {
     this.db.run(
-      'INSERT INTO charges (correlationID, value, type, comment, expiresIn, expiresDate, customer, ensureSameTaxID, daysForDueDate, daysAfterDueDate, interests, fines, discountSettings, additionalInfo, enableCashbackPercentage, enableCashbackExclusivePercentage, subaccount, splits) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO charges (id, correlationID, value, type, comment, expiresIn, expiresDate, customer, ensureSameTaxID, daysForDueDate, daysAfterDueDate, interests, fines, discountSettings, additionalInfo, enableCashbackPercentage, enableCashbackExclusivePercentage, subaccount, splits) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
+        charge.id,
         charge.correlationID,
         charge.value,
         charge.type,

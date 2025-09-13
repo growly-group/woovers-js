@@ -1,6 +1,6 @@
 import { Charge } from '../types/Charge';
 import { DatabaseProvider } from '../database/types';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUIDv7 } from "bun";
 import { CreateChargeInput } from '../types/CreateChargeInput';
 import type { Request, Response } from 'express';
 
@@ -8,7 +8,7 @@ import type { Request, Response } from 'express';
 const createCharge = (db: DatabaseProvider, data: CreateChargeInput): 
     { data: Charge | null; error: string | null } => {
     
-    const { 
+    const {
         correlationID, 
         value, 
         type, 
@@ -45,17 +45,18 @@ const createCharge = (db: DatabaseProvider, data: CreateChargeInput):
     }
 
     
-    // i will implement this soon
-    // const existingCharge = db.getChargeByCorrelationID(correlationID);
-    // if (existingCharge) {
-    //     return {
-    //         data: null,
-    //         error: 'Charge with this correlation ID already exists',
-    //     };
-    // }
+
+    const existingCharge = db.getChargeByID(correlationID);
+    if (existingCharge) {
+        return {
+            data: null,
+            error: 'Charge with this correlation ID already exists',
+        };
+    }
 
     
     const newCharge: Charge = {
+        id: randomUUIDv7(),
         correlationID,
         value,
         type: type || 'DYNAMIC',
@@ -84,6 +85,7 @@ const createCharge = (db: DatabaseProvider, data: CreateChargeInput):
             error: null,
         };
     } catch (error) {
+        console.error(error);
         return {
             data: null,
             error: 'Failed to create charge',
