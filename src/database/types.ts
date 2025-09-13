@@ -6,7 +6,7 @@ export interface DatabaseProvider {
   getPixQrCodeByIdentifier(identifier: string): PixQrCode | null;
   createPixQrCode(pixQrCode: PixQrCode): void;
   createCharge(charge: Charge): void;
-  getChargeByCorrelationID(correlationID: string): Charge | null;
+  getChargeByID(correlationID: string): Charge | null;
 }
 
 export type Paginated<T> = {
