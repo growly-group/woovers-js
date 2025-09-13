@@ -137,22 +137,21 @@ export class BunSqliteProvider implements DatabaseProvider {
     );
   }
 
-  getChargeByCorrelationID(correlationID: string): Charge | null {
-    const result = this.db.query('SELECT * FROM charges WHERE correlationID = ?').get(correlationID) as any;
+  getChargeByID(id: string): Charge | null {
+    const result = this.db.query('SELECT * FROM charges WHERE correlationID = ? OR id = ?').get(id, id) as Charge;
     
     if (!result) {
       return null;
     }
 
-    // Deserialize complex objects
     return {
       ...result,
-      customer: result.customer ? JSON.parse(result.customer) : undefined,
-      interests: result.interests ? JSON.parse(result.interests) : undefined,
-      fines: result.fines ? JSON.parse(result.fines) : undefined,
-      discountSettings: result.discountSettings ? JSON.parse(result.discountSettings) : undefined,
-      additionalInfo: result.additionalInfo ? JSON.parse(result.additionalInfo) : undefined,
-      splits: result.splits ? JSON.parse(result.splits) : undefined,
+      customer: typeof result.customer === 'string' ? JSON.parse(result.customer) : result.customer,
+      interests: typeof result.interests === 'string' ? JSON.parse(result.interests) : result.interests,
+      fines: typeof result.fines === 'string' ? JSON.parse(result.fines) : result.fines,
+      discountSettings: typeof result.discountSettings === 'string' ? JSON.parse(result.discountSettings) : result.discountSettings,
+      additionalInfo: typeof result.additionalInfo === 'string' ? JSON.parse(result.additionalInfo) : result.additionalInfo,
+      splits: typeof result.splits === 'string' ? JSON.parse(result.splits) : result.splits,
     } as Charge;
   }
 }
