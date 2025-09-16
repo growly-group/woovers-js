@@ -7,6 +7,17 @@ export interface DatabaseProvider {
   createPixQrCode(pixQrCode: PixQrCode): void;
   createCharge(charge: Charge): void;
   getChargeByID(correlationID: string): Charge | null;
+  getCharges(
+    offset: number,
+    limit: number,
+    filters?: {
+      start?: string;
+      end?: string;
+      status?: string;
+      customer?: string;
+      subscription?: string;
+    }
+  ): Paginated<Charge>;
 }
 
 export type Paginated<T> = {
