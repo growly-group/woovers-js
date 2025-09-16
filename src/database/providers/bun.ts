@@ -244,4 +244,37 @@ export class BunSqliteProvider implements DatabaseProvider {
       };
     }
   }
+
+  updateChargeExpiresDate(id: string, expiresDate: string): { success: boolean; error?: string; expiresDate?: string } {
+    try {   
+      const existingCharge = this.getChargeByID(id);
+      
+      if (!existingCharge) {
+        return {
+          success: false,
+          error: 'Charge not found'
+        };
+      }
+      
+      const result = this.db.query('UPDATE charges SET expiresDate = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ? OR correlationID = ?').run(expiresDate, id, id);
+      
+      if (result.changes === 0) {
+        return {
+          success: false,
+          error: 'Failed to update charge expiration date'
+        };
+      }
+
+      return {
+        success: true,
+        expiresDate: expiresDate
+      };
+    } catch (error) {
+      console.error('Error updating charge expiration date:', error);
+      return {
+        success: false,
+        error: 'Database error occurred'
+      };
+    }
+  }
 }
