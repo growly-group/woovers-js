@@ -19,6 +19,7 @@ export interface DatabaseProvider {
     }
   ): Paginated<Charge>;
   deleteCharge(id: string): { success: boolean; error?: string };
+  updateChargeExpiresDate(id: string, expiresDate: string): { success: boolean; error?: string; expiresDate?: string };
 }
 
 export type Paginated<T> = {
