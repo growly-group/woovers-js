@@ -218,3 +218,41 @@ export const getChargesStatic = async (req: Request, res: Response) => {
       charges: data,
     });
 }
+
+const deleteChargeById = (db: DatabaseProvider, id: string): { status: string; id: string; error?: string } => {
+    const result = db.deleteCharge(id);
+    
+    if (result.success) {
+        return {
+            status: 'success',
+            id: id
+        };
+    } else {
+        return {
+            status: 'error',
+            id: id,
+            error: result.error || 'Unknown error occurred'
+        };
+    }
+}
+
+export const deleteCharge = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return res.status(400).send({ 
+            status: 'error',
+            id: '',
+            error: 'ID parameter is required' 
+        });
+    }
+
+    const db = req.context.db;
+    const result = deleteChargeById(db, id as string);
+
+    if (result.status === 'error') {
+        return res.status(404).send(result);
+    }
+
+    res.status(200).send(result);
+}
