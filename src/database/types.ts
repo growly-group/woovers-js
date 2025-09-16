@@ -18,6 +18,7 @@ export interface DatabaseProvider {
       subscription?: string;
     }
   ): Paginated<Charge>;
+  deleteCharge(id: string): { success: boolean; error?: string };
 }
 
 export type Paginated<T> = {
