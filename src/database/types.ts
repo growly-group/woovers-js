@@ -4,6 +4,7 @@ import { Charge } from "../types/Charge";
 export interface DatabaseProvider {
   getPixQrCodes(offset: number, limit: number): Paginated<PixQrCode>;
   getPixQrCodeByIdentifier(identifier: string): PixQrCode | null;
+  getPixQrCodeByCorrelationID(correlationID: string): PixQrCode | null;
   createPixQrCode(pixQrCode: PixQrCode): void;
   createCharge(charge: Charge): void;
   getChargeByID(correlationID: string): Charge | null;

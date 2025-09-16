@@ -83,7 +83,7 @@ export class BunSqliteProvider implements DatabaseProvider {
 
   getPixQrCodes(offset: number, limit: number): Paginated<PixQrCode> {
     const pixQrCodeCount = this.db.query("SELECT COUNT(*) as count FROM pix_qr_codes").get() as number;
-    const data = this.db.query("SELECT * FROM pix_qr_codes LIMIT $limit OFFSET $offset").all({$limit: limit, $offset: offset}) as PixQrCode[];
+    const data = this.db.query("SELECT * FROM pix_qr_codes LIMIT $limit OFFSET $offset").all({ $limit: limit, $offset: offset }) as PixQrCode[];
 
     const totalCount = pixQrCodeCount;
     const hasPreviousPage = offset > 0;
@@ -104,10 +104,15 @@ export class BunSqliteProvider implements DatabaseProvider {
     return this.db.query('SELECT identifier FROM pix_qr_codes WHERE identifier = ?').get(identifier) as PixQrCode | null;
   }
 
+  getPixQrCodeByCorrelationID(correlationID: string): PixQrCode | null {
+    const result =  this.db.query('SELECT * FROM pix_qr_codes WHERE correlationID = ?').get(correlationID) as PixQrCode | null;
+    return result as PixQrCode | null;
+  }
+
   createPixQrCode(pixQrCode: PixQrCode): void {
     this.db.run(
       'INSERT INTO pix_qr_codes (name, correlationID, value, comment, identifier, paymentLinkID, paymentLinkUrl, qrCodeImage, brCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [pixQrCode.name, pixQrCode.correlationID, pixQrCode.value, pixQrCode.comment, pixQrCode.identifier, pixQrCode.paymentLinkID, pixQrCode.paymentLinkUrl, pixQrCode.qrCodeImage, pixQrCode.brCode, pixQrCode.createdAt, pixQrCode.updatedAt]
+      [pixQrCode.name, pixQrCode.correlationID, pixQrCode.value, pixQrCode.comment ?? "", pixQrCode.identifier, pixQrCode.paymentLinkID, pixQrCode.paymentLinkUrl, pixQrCode.qrCodeImage, pixQrCode.brCode, pixQrCode.createdAt, pixQrCode.updatedAt]
     );
   }
 
