@@ -1,7 +1,7 @@
 import { CreatePixQrCodeInput } from '../types/CreatePixQrCodeInput';
 import { PixQrCode } from '../types/PixQrCode';
 import { v4 as uuidv4 } from 'uuid';
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { DatabaseProvider, Paginated } from '../database/types';
 import { generateBRCode } from '../utils/brcode';
 
@@ -69,7 +69,7 @@ const createPixQrCode = (db: DatabaseProvider, data: CreatePixQrCodeInput): { da
 }
 
 const getSingle = (db: DatabaseProvider, identifier: string): { data: PixQrCode | null; error: string | null } => {
-    const data = db.getPixQrCodeByIdentifier(identifier);
+    const data = db.getPixQrCodeByCorrelationID(identifier);
 
     if (!data) {
       return {
@@ -93,16 +93,20 @@ const getAllPaginated = (
   return db.getPixQrCodes(offset, limit);
 }
 
-export const getQrCodeStatic = async (req: Request, res: Response) => {
-  const { page = 1, limit = 10 } = req.query;
-  const db = req.context.db;
+export const getQrCodeStatic = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const db = req.context.db;
 
-  const { data, pageInfo } = getAllPaginated(db, Number(page), Number(limit));
+    const { data, pageInfo } = getAllPaginated(db, Number(page), Number(limit));
 
-  res.send({
-    pageInfo,
-    pixQrCodes: data,
-  });
+    res.send({
+      pageInfo,
+      pixQrCodes: data,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 export const getQrCodeStaticByID = async (req: Request, res: Response) => {

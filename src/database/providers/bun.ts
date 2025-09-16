@@ -77,6 +77,11 @@ export class BunSqliteProvider implements DatabaseProvider {
     return this.db.query('SELECT identifier FROM pix_qr_codes WHERE identifier = ?').get(identifier) as PixQrCode | null;
   }
 
+  getPixQrCodeByCorrelationID(correlationID: string): PixQrCode | null {
+    const result =  this.db.query('SELECT * FROM pix_qr_codes WHERE correlationID = ?').get(correlationID) as PixQrCode | null;
+    return result as PixQrCode | null;
+  }
+
   createPixQrCode(pixQrCode: PixQrCode): void {
     this.db.run(
       'INSERT INTO pix_qr_codes (name, correlationID, value, comment, identifier, paymentLinkID, paymentLinkUrl, qrCodeImage, brCode, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
