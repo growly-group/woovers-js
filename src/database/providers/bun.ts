@@ -211,4 +211,37 @@ export class BunSqliteProvider implements DatabaseProvider {
       },
     };
   }
+
+  deleteCharge(id: string): { success: boolean; error?: string } {
+    try {
+      
+      const existingCharge = this.getChargeByID(id);
+      
+      if (!existingCharge) {
+        return {
+          success: false,
+          error: 'Charge not found'
+        };
+      }
+      
+      const result = this.db.query('DELETE FROM charges WHERE id = ? OR correlationID = ?').run(id, id);
+      
+      if (result.changes === 0) {
+        return {
+          success: false,
+          error: 'Failed to delete charge'
+        };
+      }
+
+      return {
+        success: true
+      };
+    } catch (error) {
+      console.error('Error deleting charge:', error);
+      return {
+        success: false,
+        error: 'Database error occurred'
+      };
+    }
+  }
 }
