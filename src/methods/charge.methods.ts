@@ -1,5 +1,5 @@
 import { Charge } from '../types/Charge';
-import { DatabaseProvider } from '../database/types';
+import { DatabaseProvider, Paginated } from '../database/types';
 import { randomUUIDv7 } from "bun";
 import { CreateChargeInput } from '../types/CreateChargeInput';
 import type { Request, Response } from 'express';
@@ -186,4 +186,35 @@ export const getCharge = async(req: Request, res: Response) => {
 
     return res.status(200).send(result.data);
 
+}
+
+const getAllPaginated = (
+    db: DatabaseProvider,
+    page: number,
+    limit: number
+  ): Paginated<Charge> => {
+    const offset = (page - 1) * limit;
+    return db.getCharges(offset, limit);
+}
+
+export const getChargesStatic = async (req: Request, res: Response) => {
+    const { page = 1, limit = 10, start, end, status, customer, subscription } = req.query as Record<string, string> & { page?: string; limit?: string };
+    const db = req.context.db;
+
+    const { data, pageInfo } = db.getCharges(
+      (Number(page) - 1) * Number(limit),
+      Number(limit),
+      {
+        start,
+        end,
+        status,
+        customer,
+        subscription,
+      }
+    );
+
+    res.send({
+      pageInfo,
+      charges: data,
+    });
 }
