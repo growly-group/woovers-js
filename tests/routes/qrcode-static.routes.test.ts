@@ -57,7 +57,6 @@ describe("Self-contained tests for /qrcode-static/", () => {
 
     beforeAll(async () => {
 
-        // TODO : Procurar outra forma de realizar o cleanup pré-teste sem perder todo o banco de dados, caso o usuário já tenha realizado alguma operação pré-teste.
         console.log("Performing pre-testing cleanup. This will wipe the entire database.")
         const testDbPath = resolve(process.cwd(), 'woovers.sqlite');
         if (existsSync(testDbPath)) {
@@ -190,7 +189,6 @@ describe("Self-contained tests for /qrcode-static/", () => {
             expect(firstResponse.status).toBe(201); 
 
             const secondResponse = await fetch(url, requestOptions);
-            // TODO : This test will fail until the db has built-in support for failing a second /POST request using the same correlationID
             expect(secondResponse.status).toBe(409); 
         });
         it("should return a 400 Bad Request if the request body is invalid", async () => {
