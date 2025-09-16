@@ -5,6 +5,16 @@ import { CreateChargeInput } from '../types/CreateChargeInput';
 import type { Request, Response } from 'express';
 
 
+const validateISO8601Date = (dateString: string): boolean => {
+    if (!dateString) return true;
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return false;
+    
+    const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})$/;
+    return iso8601Regex.test(dateString);
+};
+
 const createCharge = (db: DatabaseProvider, data: CreateChargeInput): 
     { data: Charge | null; error: string | null } => {
     
@@ -251,6 +261,61 @@ export const deleteCharge = async (req: Request, res: Response) => {
     const result = deleteChargeById(db, id as string);
 
     if (result.status === 'error') {
+        return res.status(404).send(result);
+    }
+
+    res.status(200).send(result);
+}
+
+const updateExpiresDateById = (db: DatabaseProvider, id: string, expiresDate: string): { id: string; expiresDate: string; error?: string } => {
+    const result = db.updateChargeExpiresDate(id, expiresDate);
+    
+    if (result.success) {
+        return {
+            id: id,
+            expiresDate: result.expiresDate || expiresDate
+        };
+    } else {
+        return {
+            id: id,
+            expiresDate: '',
+            error: result.error || 'Unknown error occurred'
+        };
+    }
+}
+
+export const updateExpiresDate = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { expiresDate } = req.body;
+
+    if (!id) {
+        return res.status(400).send({ 
+            id: '',
+            expiresDate: '',
+            error: 'ID parameter is required' 
+        });
+    }
+
+    if (!expiresDate) {
+        return res.status(400).send({ 
+            id: id,
+            expiresDate: '',
+            error: 'expiresDate is required in request body' 
+        });
+    }
+
+    if (!validateISO8601Date(expiresDate)) {
+        return res.status(400).send({ 
+            id: id,
+            expiresDate: '',
+            error: 'expiresDate must be a valid ISO 8601 date string (e.g., 2025-12-31T23:59:59Z)' 
+        });
+    }
+
+    const db = req.context.db;
+    const result = updateExpiresDateById(db, id as string, expiresDate);
+
+    if (result.error) {
         return res.status(404).send(result);
     }
 
